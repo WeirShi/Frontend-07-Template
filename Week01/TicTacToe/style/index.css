@@ -1,6 +1,5 @@
 * {
     box-sizing: border-box;
-    background: #222;
 }
 .container {
     margin: 3rem;
@@ -49,6 +48,6 @@ h2 {
     color: #ea4dc5;
 }
 #tips {
-    color: #ddd;
+    color: #000;
     margin-top: 10px;
 }
