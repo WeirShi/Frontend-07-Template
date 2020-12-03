@@ -15,6 +15,7 @@ let win = false;
 // 当前点击落子为 ⭕️ = 1 ❌ = 2  空 = 0
 // Tips: 使用对称运算  3-1 = 2、3-2=1
 let color = 1;
+const tips = document.getElementById('tips');
 
 // 绘制棋盘
 function show(pattern) {
@@ -50,7 +51,7 @@ function userMove(x, y) {
   // 判断是否赢得游戏
   if (check(pattern, color)) {
     win = true;
-    alert(color === 2 ? '❌  win' : '⭕️  win')
+    tips.innerText = color === 2 ? '❌  is winner' : '⭕️  is winner';
   }
   color = 3 - color;
   console.log(bestChoice(pattern, color));
@@ -74,7 +75,8 @@ function computerMove() {
     pattern[choice.point[1]][choice.point[0]] = color;
   }
   if (check(pattern, color)) {
-    alert(color === 2 ? '❌  win' : '⭕️  win');
+    win = true;
+    tips.innerText = color === 2 ? '❌  is winner' : '⭕️  is winner';
   }
   color = 3 - color;
   show(pattern);

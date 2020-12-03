@@ -3,12 +3,12 @@
     0, 0, 0,
     0, 0, 0,
     0, 0, 0
-  ]
-
+  ];
+  const tips = document.getElementById('tips');
   // 列
   const column = 3;
   // 行
-  const row = 3
+  const row = 3;
   // 是否有一方获胜
   let win = false;
 
@@ -16,7 +16,7 @@
   
   function show(pattern) {
     // 循环遍历二维数组 进行绘制棋盘
-    const board = document.getElementById('board2');
+    const board = document.getElementById('board');
     // 每一次的绘制将board置为空
     board.innerHTML = '';
     // 遍历行
@@ -44,7 +44,7 @@
     pattern[x * 3 + y] = color;
     if (check(pattern, color)) {
       win = true;
-      alert(color === 2 ? '❌  win' : '⭕️  win')
+      tips.innerText = color === 2 ? '❌  is winner' : '⭕️  is winner';
     }
     color = 3 - color;
     console.log(bestChoice(pattern, color));
@@ -63,13 +63,12 @@
 
   function computerMove() {
     let choice = bestChoice(pattern, color);
-    console.log('choice', choice);
-    console.log(choice.point[1] * 3 + choice.point[0] + 1);
     if (choice.point) {
       pattern[choice.point[1] * 3 + choice.point[0]] = color;
     }
     if (check(pattern, color)) {
-      alert(color === 2 ? '❌  win' : '⭕️  win');
+      win = true;
+      tips.innerText = color === 2 ? '❌  is winner' : '⭕️  is winner';
     }
     color = 3 - color;
     show(pattern);
