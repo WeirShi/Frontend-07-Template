@@ -98,7 +98,7 @@ function checkWin(pattern, color) {
 
     // 检查斜线
     {
-        
+
     }
 
     return false;
@@ -109,5 +109,5 @@ function willWin(pattern, color) {
     
 }
 
-drawBoard();
 initData(pattern);
+drawBoard();
