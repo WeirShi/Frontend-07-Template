@@ -104,8 +104,13 @@ function checkWin(pattern, color) {
     return false;
 }
 
-// 
+// 检查是否即将获胜
 function willWin(pattern, color) {
+    
+}
+
+// 电脑落子
+function computerMove() {
     
 }
 

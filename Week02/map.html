@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广度优先搜索Map</title>
+    <style>
+        .cell {
+            line-height: 7px;
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: gray;
+            border-bottom: 1px solid white;
+            border-right: 1px solid white;
+            vertical-align: top;
+            flex-shrink: 0;
+        } 
+        #container {
+            width: 701px;
+            display: flex;
+            flex-wrap: wrap
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <button onclick="save()">Save</button>
+</body>
+
+<script>
+
+// 启发式搜索 所需要用的数据结构Sorted
+// 有序的数据结构
+// 每次拿到的为最小的
+class Sorted {
+    constructor(data, compare) {
+        this.data = data.slice();
+        this.compare = compare || ((a, b) => a - b);
+    }
+
+    take() {
+        if (!this.data.length) {
+            // 数组中可以存null
+            return;
+        }
+        let min = this.data[0];
+        let minIndex = 0;
+
+        for (let i = 0; i < this.data.length; i++) {
+            if (this.compare(this.data[i], min) < 0) {
+                min = this.data[i];
+                minIndex = i;
+            }
+        }
+
+        this.data[minIndex] = this.data[this.data.length - 1];
+        this.data.pop();
+
+        return min;
+    }
+
+    give(v) {
+        this.data.push(v);
+    }
+}
+
+
+// 二叉堆
+class BinaryHeap {
+    constructor(data, compare) {
+        this.data = data;
+        this.compare = compare;
+    }
+
+    tkae() {
+        if (!this.data.length) { return; }
+        let min = this.data[0]; // 第一个元素初始化为最小值
+        let minIndex = 0;
+
+        while(i < this.data.length) {
+            if (i * 2 + 1 >= this.data.length) { return; }
+            if (i * 2 + 2 >= this.data.length) {
+                this.data[i] = this.data[i * 2 + 1];
+                i = i * 2 + 1;
+            } else {
+                this.data[i] = this.data[i * 2 + 2];
+                i = i * 2 + 2;
+            }
+        }
+
+        if(i < this.data.length - 1) {
+            this.insertAt(i, this.data.pop());
+        } else {
+            this.data.pop();
+        }
+    }
+
+    insertAt(i, v) {
+        this.data[i] = v;
+        while(i > 0 && this.compare(v, this.data[Math.floor((i - 1) / 2)]) < 0) {
+            this.data[i] = this.data[Math.floor((i - 1) / 2)];
+            this.data[Math.floor((i - 1) / 2)] = v;
+            i = Math.floor((i - 1) / 2);
+        }
+    }
+
+    insert(v) {
+        console.log(v);
+        this.insertAt(this.data.length, v);
+    }
+
+    get length() {
+        return this.data.length;
+    }
+}
+
+
+
+    let map = localStorage["map"] ? JSON.parse(localStorage["map"]) : Array(10000).fill(0);
+
+    let container = document.getElementById("container");
+    for (let y = 0; y < 100; y++) {
+        for (let x = 0; x < 100; x++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            // cell.innerText = y * 100 + x;
+            if (map[100 * y + x]) {
+                cell.style.backgroundColor = "black";
+            }
+            container.appendChild(cell);
+
+            cell.addEventListener("mousemove", () => {
+                if (mousedown) {
+                    if (clear) {
+                        cell.style.backgroundColor = "";
+                    } else {
+                        cell.style.backgroundColor = "black";
+                        map[100 * y + x] = 1;
+                    }
+                }
+            })
+        }
+    }
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener("mousedown", (e) => {
+        mousedown = true;
+        clear = (e.which === 3);
+    })
+
+    document.addEventListener("mouseup", () => { mousedown = false; });
+    document.addEventListener("contextmenu", e => { e.preventDefault(); });
+    
+
+    function sleep(t) {
+        return new Promise(resolve => {
+            setTimeout(resolve, t)
+        })
+    }
+
+    // 广度优先搜索  寻路
+    // function path(map, start, end) {
+    //     let queue = [start]; // 集合 队列
+    //     // stack 栈 使用push 和 pop 即为深度优先搜索
+
+    //     function insert(x, y) {
+    //         if (x < 0 || x>= 100 || y < 0 || y >= 100) {
+    //             return;
+    //         }
+    //         if (map[y * 100 + x]) {
+    //             return;
+    //         }
+    //         map[y * 100 + x] = 2;
+    //         queue.push([x, y]);
+    //     }
+
+    //     while(queue.length) {
+    //         let [x, y] = queue.shift();
+    //         console.log(x, y);
+    //         if (x === end[0] && y === end[1]) {
+    //             return true;
+    //         }
+    //         insert(x - 1, y);
+    //         insert(x, y - 1);
+    //         insert(x+ 1, y);
+    //         insert(x, y + 1);
+    //     }
+
+    //     return false;
+    // }
+
+    // 使用 async  await 
+    async function path(map, start, end) {
+        let queue = [start];
+
+        async function insert(x, y) {
+            if (x < 0 || x>= 100 || y < 0 || y >= 100) {
+                return;
+            }
+            if (map[y * 100 + x]) {
+                return;
+            }
+            //  sleep 30ms
+            await sleep(3);
+            container.children[y * 100 + x].style.backgroundColor = "lightgreen"; 
+            map[y * 100 + x] = 2;
+            queue.push([x, y]);
+        }
+
+        while(queue.length) {
+            let [x, y] = queue.shift();
+            // console.log(x, y);
+            if (x === end[0] && y === end[1]) {
+                return true;
+            }
+            await insert(x - 1, y);
+            await insert(x, y - 1);
+            await insert(x+ 1, y);
+            await insert(x, y + 1);
+        }
+    }
+
+    // 处理路径问题
+    async function findPath(map, start, end) {
+        let table = Object.create(map);
+        // let queue = [start];
+        // 此处可更换为Sorted
+        let queue = new Sorted([start], (a, b) => distance(a) - distance(b));
+        console.log('queue', queue);
+
+        // 与end节点 (**) 乘方运算符
+        function distance(point) {
+            return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
+        }
+
+
+        async function insert(x, y, pre) {
+            if (x < 0 || x>= 100 || y < 0 || y >= 100) {
+                return;
+            }
+            if (table[y * 100 + x]) {
+                return;
+            }
+            //  sleep 3ms
+            // await sleep(3);
+            container.children[y * 100 + x].style.backgroundColor = "lightgreen"; 
+            // map[y * 100 + x] = 2;
+            table[y * 100 + x] = pre;
+            // queue.push([x, y]);
+            // 相应的将push改成Sorted的give方法
+            queue.give([x, y]);
+        }
+        
+        // 视频中 while循环条件不对
+        while(queue.data.length) {
+            // let [x, y] = queue.shift();
+            // 相应的将shift改成Sorted的take方法
+            let [x, y] = queue.take();
+            console.log(x, y);
+            if (x === end[0] && y === end[1]) {
+                // return true;
+                let path = [];
+                while (x !== start[0] || y !== start[1]) {
+                    path.push(map[y * 100 + x]);
+                    [x, y] = table[y * 100 + x];
+                    await sleep(3);
+                    container.children[y * 100 + x] .style.backgroundColor = "purple";
+                }
+
+                return path;
+            }
+            await insert(x - 1, y, [x, y]);
+            await insert(x, y - 1, [x, y]);
+            await insert(x+ 1, y, [x, y]);
+            await insert(x, y + 1, [x, y]);
+
+
+            await insert(x - 1, y - 1, [x, y]);
+            await insert(x + 1, y - 1, [x, y]);
+            await insert(x - 1, y + 1, [x, y]);
+            await insert(x + 1, y + 1, [x, y]);
+        }
+
+        return null;
+    }
+
+
+    function save() {
+        localStorage["map"] = JSON.stringify(map)
+    }
+</script>
+
+</html>
