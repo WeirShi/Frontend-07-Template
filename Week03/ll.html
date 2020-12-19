@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LL算法 - 语法分析</title>
+</head>
+<body>
+    <script>
+        const reg = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+        const dictionary = ['Number', 'Whitespace', 'LineTerinator', '*', '/', '+', '-'];
+        function* tokenize (source) {
+            let result = null;
+            let lastIndex = 0;
+
+            while(true) {
+                lastIndex = reg.lastIndex;
+                result = reg.exec(source);
+                // console.log('result', result);
+                if (!result) {
+                    break;
+                }
+                // 通过正则表达式的lastIndex 进行比较，当长度超出的时候，则表示当前运算字符串中有我们当前字典中不认识的字符
+                // 扔出一个error
+                if (reg.lastIndex - lastIndex > result[0].length) {
+                    throw(new Error('字符不匹配'));
+                }
+
+                // 定义一种有效token类型，进行存储
+                let token = {
+                    type: null,
+                    value: null
+                }
+                for (let i = 1; i <= dictionary.length; i++) {
+                    if (result[i]) {
+                       token.type = dictionary[i - 1];
+                    }
+                }
+                token.value = result[0];
+                yield token;
+            }
+            // 表示结束的时候 我们可以返回一个type：'EOF' End Of File
+            yield { type: 'EOF' };
+        }
+
+        let source = [];
+
+        for (let token of tokenize("1024 + 10 * 25")) {
+            if (token.vaule !== 'Whitespace' || token.value !== 'LineTerinator') {
+                source.push(token);
+            }
+        }
+
+        function Expression (source) {
+            if(source[0].type === 'AdditiveExpression' &&  source[1] && source[1].type === 'EOF'){
+                let node = {
+                    type: 'Expression',
+                    children: [source.shift(),source.shift()]
+                }
+                source.unshift(node);
+                return node;
+            }
+            AdditiveExpression(source)
+            return Expression(source)
+        }
+        function AdditiveExpression (source) {
+            const temp = source[0];
+            const temp2 = source[1];
+
+            if(temp.type === 'MultiplicativeExpression'){
+                let node = {
+                    type: 'AdditiveExpression',
+                    children: [temp]
+                }
+                source[0] = node;
+                return AdditiveExpression(source);
+            }
+
+            if(temp.type === 'AdditiveExpression' && temp2 && (temp2.value === '+' || temp2.value === '-')){
+                let node = {
+                    type: 'AdditiveExpression',
+                    operator: temp2.value,
+                    children: []
+                }
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+
+                MultiplicativeExpression(source);
+                node.children.push(source.shift());
+                source.unshift(node);
+                return AdditiveExpression(source);
+            }
+            if(temp.type === 'AdditiveExpression') {
+                return source;
+            }
+            MultiplicativeExpression(source);
+            return AdditiveExpression(source);
+        }
+        function MultiplicativeExpression (source) {
+            const temp = source[0];
+            const temp2 = source[1];
+            if(temp.type === 'Number'){
+                let node = {
+                    type: 'MultiplicativeExpression',
+                    children: [temp]
+                };
+                source[0] = node;
+                return MultiplicativeExpression(source)
+            }
+            if(temp.type === 'MultiplicativeExpression' && temp2 && (temp2.value === '*' || temp2.value === '/')){
+                let node = {
+                    type: 'MultiplicativeExpression',
+                    operator: temp2.value,
+                    children: []
+                };
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+                source.unshift(node)
+                return MultiplicativeExpression(source)
+            }
+            if(temp.type === 'MultiplicativeExpression') {
+                return source;
+            }
+        }
+
+
+        MultiplicativeExpression(source);
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词法分析</title>
+</head>
+<body>
+    <script>
+        // 正则 匹配数字，空格 tab，回车换行，+-*/的符号
+        const reg = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+        // 定义相对应的字典
+        const dictionary = ['Number', 'Whitespace', 'LineTerinator', '*', '/', '+', '-'];
+
+        // 通过正则表达式的扫描对于四则运算符的字符串进行词法分析
+
+        // tips: 通过使用 generate 函数来进行一种序列化，返回出token
+        function* tokenize (source) {
+            let result = null;
+            let lastIndex = 0;
+
+            while(true) {
+                lastIndex = reg.lastIndex;
+                result = reg.exec(source);
+                // console.log('result', result);
+                if (!result) {
+                    break;
+                }
+                // 通过正则表达式的lastIndex 进行比较，当长度超出的时候，则表示当前运算字符串中有我们当前字典中不认识的字符
+                // 扔出一个error
+                if (reg.lastIndex - lastIndex > result[0].length) {
+                    throw(new Error('字符不匹配'));
+                }
+
+                // 定义一种有效token类型，进行存储
+                let token = {
+                    type: null,
+                    value: null
+                }
+                for (let i = 1; i <= dictionary.length; i++) {
+                    if (result[i]) {
+                       token.type = dictionary[i - 1];
+                    }
+                }
+                token.value = result[0];
+                yield token;
+            }
+            // 表示结束的时候 我们可以返回一个type：'EOF' End Of File
+            yield {
+                type: 'EOF'
+            }
+        }
+
+        // 由于tokenize方法使用到了generate
+        // 这里我们可以使用for of 进行遍历
+
+
+        // Throw A Error 因为存在不认识的字符 '~'
+        // for (let token of tokenize("1024~ + 10 * 25")) {
+        //     console.log('token', token);
+        // }
+
+        // success
+        for (let token of tokenize("1024 + 10 * 25")) {
+            console.log('token', token);
+        }
+        
+    </script>
+</body>
+</html>
