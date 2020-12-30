@@ -1,0 +1,88 @@
+<input id="r" type="range" min=0 max=255>
+<input id="g" type="range" min=0 max=255>
+<input id="b" type="range" min=0 max=255>
+
+<div id="bg" style="width: 100px; height: 100px; border: 1px solid #000;"></div>
+
+<script>
+  let callbacks = new Map();
+  let reactivities = new Map();
+  let usedReactives = [];
+
+  let obj = {
+    r: 1,
+    g: 1,
+    b: 1
+  }
+
+  let p = reactive(obj);
+
+  effect(() => {
+    document.getElementById('r').value = p.r;
+    document.getElementById('g').value = p.g;
+    document.getElementById('b').value = p.b;
+    document.getElementById('bg').style.backgroundColor = `rgb(${p.r}, ${p.g}, ${p.b})`;
+  });
+
+  document.getElementById('r').addEventListener("input", event => p.r = event.target.value);
+  document.getElementById('g').addEventListener("input", event => p.g = event.target.value);
+  document.getElementById('b').addEventListener("input", event => p.b = event.target.value);
+
+  function effect(cb) {
+    // callbacks.push(cb);
+    usedReactives = [];
+    cb();
+    // 
+    for (let reactivity of usedReactives) {
+      if (!callbacks.has(reactivity[0])) {
+        callbacks.set(reactivity[0], new Map());
+      }
+      if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+        callbacks.get(reactivity[0]).set(reactivity[1], [])
+      }
+      callbacks.get(reactivity[0]).get(reactivity[1]).push(cb);
+    }
+  }
+
+
+  function reactive(obj) {
+    if (reactivities.has(obj)) {
+      return reactivities.get(obj);
+    }
+
+
+    let proxy = new Proxy(obj, {
+      set: (obj, prop, value) => {
+        obj[prop] = value;
+
+        // 循环遍历callbacks
+        // for (let cb of callbacks) {
+        //   cb();
+        // }
+
+        if (callbacks.get(obj)) {
+          if (callbacks.get(obj).get(prop)) {
+            for (let cb of callbacks.get(obj).get(prop)) {
+              cb();
+            }
+          }
+        }
+
+        return obj[prop];
+      },
+      get: (obj, prop) => {
+        usedReactives.push([obj, prop]);
+
+        // 嵌套对象
+        if (typeof obj[prop] === 'object') {
+          return reactive(obj[prop]);
+        }
+        return obj[prop];
+      }
+    });
+
+    reactivities.set(obj, proxy);
+    return proxy;
+  }
+
+</script>

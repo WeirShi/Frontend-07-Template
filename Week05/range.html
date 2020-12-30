@@ -1,0 +1,82 @@
+<!-- DOM操作  拖拽 -->
+<div id="box">文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+</div>
+<div id="cell" style="display: inline-block; width: 100px; height: 100px; background-color: red;"></div>
+<script>
+  const cell = document.getElementById('cell');
+
+  let baseX = 0, baseY = 0;
+  let screenX = 0, screenY = 0;
+  let width = document.body.offsetWidth;
+  let height = document.body.offsetHeight;
+  cell.addEventListener('mousedown', function (event) {
+
+    let startX = event.clientX;
+    let startY = event.clientY;
+    let move = (e) => {
+      // let bx = e.clientX - startX + baseX;
+      // let by = e.clientY - startY + baseY;
+      // let x = (bx < 0 ? 0 : (bx + 100 > width ? width - 100 : bx));
+      // let y = (by < 0 ? 0 : (by + 100 > height ? height - 100 : by));
+      // cell.style.transform = `translate(${x}px, ${y}px)`;
+      let range = getNearest(e.clientX, e.clientY);
+      range.insertNode(cell);
+    }
+
+    let up = (e) => {
+      baseX += e.clientX - startX;
+      baseY += e.clientY - startY;
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    }
+
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  })
+
+  let box = document.getElementById('box');
+
+  let ranges = [];
+  for (let i = 0; i < box.childNodes[0].textContent.length; i++) {
+    let range = document.createRange();
+    range.setStart(box.childNodes[0], i);
+    range.setEnd(box.childNodes[0], i);
+    ranges.push(range);
+  }
+
+  // 找最近的一个位置
+  function getNearest(x, y) {
+    let min = Infinity;
+    let nearest = null;
+    for (let range of ranges) {
+      // 计算位置
+      let rect = range.getBoundingClientRect();
+      let dis = (rect.x - x) ** 2 + (rect.y - y) ** 2;
+      if (dis < min) {
+        min = dis;
+        nearest = range;
+      }
+    }
+
+    return nearest;
+  }
+
+  document.addEventListener('selectstart', e => e.preventDefault())
+</script>
