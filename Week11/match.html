@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>match函数</title>
+</head>
+<body>
+  <div>
+    <div id="id" class="class"></div>
+  </div>
+  
+</body>
+<script>
+  let dom = document.getElementById("id");
+  console.log(match("div #id.class", dom));
+
+  function match(selector, element) {
+    let rules = (selector || '').split(/\s+/);
+    let index = rules.length - 1
+    let currentElement = element
+
+    // 遍历复合选择器
+    while (index >= 0) {
+      // 拆分复合选择器
+      let rule = rules[index]
+      let parseRules = rule.match(/^([^.^#]+)|(\.[^.^#]+)|(\#[^.^#]+)/g) || []
+      while (true) {
+        if (!currentElement.tagName) return false
+        let isMatch = selectDom(parseRules, currentElement)
+
+        // 更新 dom
+        currentElement = currentElement.parentNode
+
+        if (isMatch) { // 刚刚这个 dom 符合这个复杂选择器，可以跳出这个复杂选择器的对比了，去进行下一项
+          break
+        } else { // 不符合，继续对比新 dom
+          continue
+        }
+      }
+      index--
+    }
+    return true
+  }
+
+  function selectDom(selectorArr, dom) {
+    for (let selector of selectorArr) {
+      if (selector.charAt(0) === '#') { // 是 id 选择器
+        let id = dom.id
+        let ids = (id || '').split(/\s+/)
+        if (!ids.includes(selector.substr(1))) {
+          return false
+        }
+      } else if (selector.charAt(0) === '.') { // 是 类选择器
+        let hasClass = dom.classList.contains(selector.substr(1))
+        if (!hasClass) {
+          return false
+        }
+      } else { // 是 tagName 选择器
+        if (dom.tagName.toLowerCase() !== selector) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+</script>
+</html>
