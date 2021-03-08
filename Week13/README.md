@@ -17,13 +17,13 @@ DTD (Document Type Definition) - 文档类型定义
   `&nbsp;` - 空格，连接单词时虽然显示的时候中间有空格，但是实际不会把单词分开，会把两个词连成一个词
 - lamdba  
   &Lambda` - `λ` 希腊字母   
-- quot
+- quot   
   `&quot;` - `"` 双引号
-- amp
+- amp   
   `&amp;` - `&` 符号
-- lt
+- lt   
   `&lt;` - `<` 小于号
-- gt
+- gt   
   `&gt;` - `>` 大于号
 
 ## HTML 的语义
