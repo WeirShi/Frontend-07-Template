@@ -16,7 +16,7 @@ DTD (Document Type Definition) - 文档类型定义
 - nbsp - no-break space   
   `&nbsp;` - 空格，连接单词时虽然显示的时候中间有空格，但是实际不会把单词分开，会把两个词连成一个词
 - lamdba  
-  &Lambda` - `λ` 希腊字母   
+  `&Lambda` - `λ` 希腊字母   
 - quot   
   `&quot;` - `"` 双引号
 - amp   
@@ -59,7 +59,7 @@ DTD (Document Type Definition) - 文档类型定义
 ### 字符引用
 
 - 数字型引用 - &#
-  `&#161;`
+  1. `&#161;`
 - 实体型引用 - &
   1. `&amp;`
   2. `&lt;`
